@@ -136,9 +136,11 @@ class ViewController: UIViewController {
                 }
                 
             } else {
-                println(error)
+                
+                self.attackMode()
             }
             
+
         })
     }
     
@@ -208,6 +210,59 @@ class ViewController: UIViewController {
         user.saveInBackground()
         
         teamHolder.removeFromSuperview()
+        
+        self.attackMode()
+        
+    }
+    
+    func attackMode() {
+        
+        var installation = PFInstallation.currentInstallation()
+        installation.setObject(PFUser.currentUser(), forKey: "user")
+        installation.saveInBackground()
+        
+        
+        var attackButton = UIButton(frame: CGRectMake(10, 200, 300, 40))
+        
+        attackButton.setTitle("Attack", forState: .Normal)
+        attackButton.backgroundColor = UIColor.blackColor()
+        
+        attackButton.addTarget(self, action: Selector("attack"), forControlEvents: .TouchUpInside)
+        
+        self.view.addSubview(attackButton)
+        
+    }
+    
+    func attack() {
+        
+        var user = PFUser.currentUser()
+        
+        var otherteam = (user.objectForKey("team") as NSString == "red") ? "blue" : "red"
+    
+        
+        var userQuery = PFQuery(className: "User")
+        userQuery.whereKey("team", equalTo: otherteam)
+        
+        userQuery.findObjectsInBackgroundWithBlock { (objects: [AnyObject]!, error: NSError!) -> Void in
+            
+            println("devices \(objects)")
+            
+        }
+        
+        var deviceQuery = PFInstallation.query()
+        deviceQuery.whereKey("user", matchesQuery: userQuery)
+        
+//        deviceQuery.findObjectsInBackgroundWithBlock { (objects: [AnyObject]!, error: NSError!) -> Void in
+//            
+//            println(objects)
+//        }
+        
+        var push = PFPush()
+        
+        push.setQuery(deviceQuery)
+//        push.setQuery(userQuery)
+        push.setMessage("STOP JAMIE")
+        push.sendPushInBackground()
         
     }
     
