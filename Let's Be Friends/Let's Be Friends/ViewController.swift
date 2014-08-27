@@ -125,7 +125,19 @@ class ViewController: UIViewController {
         PFUser.logInWithUsernameInBackground(fieldData["Username"]!.text, password: fieldData["Password"]!.text, block: { (user: PFUser!, error: NSError!) -> Void in
             
         self.loginHolder.removeFromSuperview()
-            
+        
+            if user != nil {
+                
+                println(user.objectForKey("team"))
+                
+                if user.objectForKey("team") == nil {
+                    
+                    self.showTeams()
+                }
+                
+            } else {
+                println(error)
+            }
             
         })
     }
@@ -145,6 +157,7 @@ class ViewController: UIViewController {
                 print("you are logged in")
                 
                 self.signupHolder.removeFromSuperview()
+                self.showTeams()
             
             } else {
                 
@@ -152,6 +165,49 @@ class ViewController: UIViewController {
             }
             
         }
+        
+    }
+    
+    var teamHolder = UIView()
+    
+    func showTeams() {
+        
+        teamHolder.frame = self.view.frame
+        
+        var redTeam = UIButton(frame: CGRectMake(0, 0, 320, UIScreen.mainScreen().bounds.size.height/2.0))
+        
+        redTeam.backgroundColor = UIColor.redColor()
+        redTeam.tag = 1
+        redTeam.addTarget(self, action: Selector("chooseTeam:"), forControlEvents: .TouchUpInside)
+        
+        teamHolder.addSubview(redTeam)
+        
+        var blueTeam = UIButton(frame: CGRectMake(0, UIScreen.mainScreen().bounds.size.height/2.0, 320, UIScreen.mainScreen().bounds.size.height/2.0))
+        
+        blueTeam.backgroundColor = UIColor.blueColor()
+        blueTeam.addTarget(self, action: Selector("chooseTeam:"), forControlEvents: .TouchUpInside)
+        
+        teamHolder.addSubview(blueTeam)
+        
+        self.view.addSubview(teamHolder)
+        
+    }
+    
+    func chooseTeam(teamButton:UIButton) {
+        
+        var user = PFUser.currentUser()
+        
+        switch teamButton.tag {
+            
+        case 1 :
+            user.setObject("red", forKey: "team")
+        default:
+            user.setObject("blue", forKey: "team")
+        }
+        
+        user.saveInBackground()
+        
+        teamHolder.removeFromSuperview()
         
     }
     
